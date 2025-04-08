@@ -1,0 +1,27 @@
+import React, { useState } from 'react';
+import UploadSection from './components/UploadSection';
+import VideoPlayer from './components/VideoPlayer';
+import './App.css';
+
+function App() {
+  const [csvFile, setCsvFile] = useState(null);
+
+  const handleCsvUploadSuccess = (file) => {
+    setCsvFile(file); // Store the uploaded CSV file in the parent component
+  };
+
+  return (
+    <div className="app">
+      <div className="sidebar">
+        <UploadSection csvFile={csvFile} onCsvUpload={handleCsvUploadSuccess} />
+      </div>
+      <div className="main">
+        <VideoPlayer csvFile={csvFile} />
+      </div>
+    </div>
+  );
+}
+
+export default App;
+
+

@@ -1,0 +1,48 @@
+.upload-section {
+    text-align: center;
+    margin: 20px;
+  }
+  
+  .upload-btn {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  .log-section {
+    margin-top: 20px;
+  }
+  
+  input {
+    margin: 5px;
+    padding: 5px;
+  }
+  
+  button {
+    margin: 5px;
+    padding: 5px 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .log-table {
+    margin-top: 15px;
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .log-table th, .log-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+  }
+  
+  .log-table th {
+    background-color: #f4f4f4;
+  }
+  

@@ -1,0 +1,97 @@
+/* Canvas for drawing with non-interactive pointer events */
+.drawing-canvas {
+  pointer-events: none;
+  border: none;
+}
+
+/* ID overlay on the video for showing the current ID */
+.id-overlay {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  z-index: 2;
+}
+
+/* Popup window for editing ID */
+.id-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+  border: 2px solid #47A4D9;
+  z-index: 1000;
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.id-popup h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  color: #47A4D9;
+  text-align: center;
+}
+
+.id-popup input {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.id-popup button {
+  background-color: #47A4D9;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.id-popup button:hover {
+  background-color: #3791c6;
+}
+.feedback-message {
+  color: green; /* Or red if it’s an error */
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.frame-navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.frame-markers {
+  display: flex;
+  gap: 5px;
+}
+
+.frame-marker {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.frame-marker.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}

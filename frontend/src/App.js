@@ -28,6 +28,14 @@ function MainApp() {
   // Steps shown after CSV is uploaded
   const postUploadSteps = [
     {
+      target: '.frame-navigation',
+      content: 'Use these buttons to navigate to key frames (potential frames where ID Switches happen).',
+    },
+    {
+      target: '.controls',
+      content: 'Use these controls to play, pause, and track frame/ID info.',
+    },
+    {
       target: '#input-a',
       content: 'Enter the old ID you want to replace (A).',
     },
@@ -43,14 +51,7 @@ function MainApp() {
       target: '#apply-correction',
       content: 'Click here to apply all corrections and reprocess the video.',
     },
-    {
-      target: '.frame-navigation',
-      content: 'Use these buttons to navigate to key frames (potential frames where ID Switches happen).',
-    },
-    {
-      target: '.controls',
-      content: 'Use these controls to play, pause, and track frame/ID info.',
-    },
+    
   ];
 
   // Set initial steps on mount

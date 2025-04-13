@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
+import "./UploadSection.css";
 
-// frame_numbers = [30, 40, 50];
 let exportedFrameNumbers = [];
-
 
 function UploadSection({ csvFile, onCsvUpload }) {
   const [csvUploaded, setCsvUploaded] = useState(false);
@@ -11,6 +10,8 @@ function UploadSection({ csvFile, onCsvUpload }) {
   const [frameNumber, setFrameNumber] = useState("");
   const [A, setA] = useState("");
   const [B, setB] = useState("");
+
+ 
 
   useEffect(() => {
     setCsvUploaded(!!csvFile);
@@ -20,7 +21,7 @@ function UploadSection({ csvFile, onCsvUpload }) {
     try {
       const response = await axios.get('http://127.0.0.1:5000/get-frame-numbers');
       if (response.data?.end_frames) {
-        exportedFrameNumbers = response.data.end_frames; // Update exported variable
+        exportedFrameNumbers = response.data.end_frames;
         alert(`Received frames: ${exportedFrameNumbers.join(', ')}`);
       }
     } catch (error) {
@@ -70,12 +71,10 @@ function UploadSection({ csvFile, onCsvUpload }) {
       }
     } catch (error) {
       console.error('CSV upload error:', error);
-      
       let errorMessage = 'Error uploading CSV file';
+
       if (error.response) {
-        // Try to get error message from response
         if (error.response.data instanceof Blob) {
-          // If the error response is a Blob, try to read it as text
           const text = await error.response.data.text();
           errorMessage = text || errorMessage;
         } else {
@@ -84,7 +83,7 @@ function UploadSection({ csvFile, onCsvUpload }) {
       } else {
         errorMessage = error.message || errorMessage;
       }
-      
+
       alert(errorMessage);
     }
   };
@@ -123,7 +122,7 @@ function UploadSection({ csvFile, onCsvUpload }) {
         const videoPlayer = document.querySelector('video');
         if (videoPlayer) {
           videoPlayer.src = newVideoUrl;
-          videoPlayer.load(); // Important to reload the video
+          videoPlayer.load();
         }
         alert("Logs successfully saved to backend.");
         setLogEntries([]);
@@ -138,16 +137,18 @@ function UploadSection({ csvFile, onCsvUpload }) {
 
   return (
     <div className="upload-section">
+
       {!csvUploaded ? (
         <>
-          <label htmlFor="csv-upload" className="upload-btn">Upload CSV</label>
-          <input
-            id="csv-upload"
-            type="file"
-            accept=".csv"
-            style={{ display: "none" }}
-            onChange={handleCsvUpload}
-          />
+          <label htmlFor="csv-input" id="csv-upload" className="upload-btn">Upload CSV</label>
+<input
+  id="csv-input"
+  type="file"
+  accept=".csv"
+  style={{ display: "none" }}
+  onChange={handleCsvUpload}
+/>
+
         </>
       ) : (
         <div className="log-section">
@@ -159,19 +160,28 @@ function UploadSection({ csvFile, onCsvUpload }) {
             onChange={(e) => setFrameNumber(e.target.value)}
           />
           <input
-            type="text"
-            placeholder="A"
-            value={A}
-            onChange={(e) => setA(e.target.value)}
-          />
-          <input
-            type="text"
-            placeholder="B"
-            value={B}
-            onChange={(e) => setB(e.target.value)}
-          />
-          <button onClick={handleLogChanges}>Register Changes</button>
-          <button onClick={handleClearTable}>Make Changes</button>
+  id="input-a"
+  type="text"
+  placeholder="A"
+  value={A}
+  onChange={(e) => setA(e.target.value)}
+/>
+
+<input
+  id="input-b"
+  type="text"
+  placeholder="B"
+  value={B}
+  onChange={(e) => setB(e.target.value)}
+/>
+
+<button id="add-correction" className="correction-btn" onClick={handleLogChanges}>
+  Add Correction
+</button>
+
+<button id="apply-correction" className="correction-btn" onClick={handleClearTable}>
+  Apply Correction
+</button>
 
           {logEntries.length > 0 && (
             <table className="log-table">
@@ -199,5 +209,4 @@ function UploadSection({ csvFile, onCsvUpload }) {
   );
 }
 
-// export { exportedFrameNumbers };
 export default UploadSection;

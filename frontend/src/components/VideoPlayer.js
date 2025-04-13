@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import './VideoPlayer.css';
 import axios from "axios";
 
-function VideoPlayer({ csvFile }) {
+function VideoPlayer({ csvFile, runTour, setRunTour }) {
   const [videoSrc, setVideoSrc] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -76,7 +76,7 @@ function VideoPlayer({ csvFile }) {
       alert('Please upload a valid video file.');
     }
   };
-  
+
   const handleEditId = () => {
     setShowIdPopup(true);
     if (videoRef.current) videoRef.current.pause();
@@ -124,10 +124,10 @@ function VideoPlayer({ csvFile }) {
         currentId: currentId,
         newId: newId,
       });
-  
+
       if (response.data.success) {
         const newVideoUrl = `http://127.0.0.1:5000/temp/${response.data.new_video}`;
-        setVideoSrc(newVideoUrl); // Update the video source
+        setVideoSrc(newVideoUrl);
         alert("ID updated successfully and video reprocessed.");
       } else {
         alert("Failed to update ID and reprocess video.");
@@ -136,7 +136,7 @@ function VideoPlayer({ csvFile }) {
       console.error("Error updating ID:", error);
       alert("Error updating ID.");
     }
-  
+
     setShowIdPopup(false);
     setCurrentId("");
     setNewId("");
@@ -153,7 +153,7 @@ function VideoPlayer({ csvFile }) {
     }
   };
 
-  const navigateToFrame = (frame, index) => {
+  const navigateToFrame = (frame) => {
     if (videoRef.current) {
       const time = frame / frameRate;
       videoRef.current.currentTime = time;
@@ -193,7 +193,7 @@ function VideoPlayer({ csvFile }) {
     <div className="video-player">
       {!videoSrc && (
         <>
-          <label htmlFor="video-upload" className="upload-btn">Upload Video</label>
+          <label htmlFor="video-upload" id="video-input" className="upload-btn">Upload Video</label>
           <input
             id="video-upload"
             type="file"
@@ -213,18 +213,11 @@ function VideoPlayer({ csvFile }) {
             onLoadedMetadata={handleLoadedMetadata}
             onEnded={() => setIsPlaying(false)}
           />
-          {/* <video
-            ref={videoRef}
-            className="video-element"
-            src={videoSrc}
-            onEnded={() => setIsPlaying(false)}
-            style={{ filter: showIdPopup ? 'brightness(0.8)' : 'none' }}
-          /> */}
           {showIdPopup && <div className="dimming-overlay" />}
         </div>
       )}
 
-{videoSrc && (
+      {videoSrc && (
         <div className="controls">
           <button onClick={togglePlayPause}>
             {isPlaying ? 'Pause' : 'Play'}
@@ -251,21 +244,6 @@ function VideoPlayer({ csvFile }) {
           <button onClick={navigateNext}>Next Frame</button>
         </div>
       )}
-
-      <div className="save-download">
-        <button
-          onClick={() => {
-            if (csvUploaded) {
-              handleEditId();
-            } else {
-              alert("Please upload a CSV file first to enable editing.");
-            }
-          }}
-          disabled={!csvUploaded}
-        >
-          Edit ID
-        </button>
-      </div>
 
       {showIdPopup && (
         <div className="id-popup">

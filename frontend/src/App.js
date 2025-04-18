@@ -8,33 +8,36 @@ import './App.css';
 
 function MainApp() {
   const [csvFile, setCsvFile] = useState(null);
-  const [end_frames, setEndFrames] = useState([]);
+  const [endFrames, setEndFrames] = useState([]);
+  const [videoUploaded, setVideoUploaded] = useState(false);
   const [runTour, setRunTour] = useState(true);
   const [tourSteps, setTourSteps] = useState([]);
 
-  // Initial steps (before CSV is uploaded)
-  const initialSteps = [
-   
+  // Step configs
+  const videoStep = [
     {
       target: '#video-input',
       content: 'Start by uploading your raw video file here.',
     },
     {
       target: '#csv-upload',
-      content: 'Now upload  a CSV file here which is of the following format [frame track_id class_id confidence x1 y1 x2 y2 ].',
+      content: 'Now upload a CSV file here with format: [frame, track_id, class_id, confidence, x1, y1, x2, y2].',
     },
   ];
 
-  // Steps shown after CSV is uploaded
-  const postUploadSteps = [
-    {
-      target: '.frame-navigation',
-      content: 'Use these buttons to navigate to key frames (potential frames where ID Switches happen).',
-    },
+  const controlSteps = [
     {
       target: '.controls',
       content: 'Use these controls to play, pause, and track frame/ID info.',
     },
+    {
+      target: '.frame-navigation',
+      content: 'Use these buttons to navigate to key frames (potential frames where ID switches happen).',
+    },
+  ];
+
+  const csvSteps = [
+   
     {
       target: '#input-a',
       content: 'Enter the old ID you want to replace (A).',
@@ -51,20 +54,26 @@ function MainApp() {
       target: '#apply-correction',
       content: 'Click here to apply all corrections and reprocess the video.',
     },
-    
   ];
 
-  // Set initial steps on mount
+  // On mount, start tour with video upload
   useEffect(() => {
-    setTourSteps(initialSteps);
+    setTourSteps(videoStep);
   }, []);
 
-  const handleCsvUploadSuccess = (file, endFrames) => {
-    setCsvFile(file);
-    setEndFrames(endFrames);
+  // After video is uploaded
+  const handleVideoUpload = () => {
+    setVideoUploaded(true);
+    setTourSteps([...videoStep, ...controlSteps]);
+    setRunTour(false);
+    setTimeout(() => setRunTour(true), 0);
+  };
 
-    // Update steps and restart tour
-    setTourSteps(postUploadSteps);
+  // After CSV is uploaded
+  const handleCsvUploadSuccess = (file, frames) => {
+    setCsvFile(file);
+    setEndFrames(frames);
+    setTourSteps([...videoStep, ...controlSteps, ...csvSteps]);
     setRunTour(false);
     setTimeout(() => setRunTour(true), 0);
   };
@@ -89,6 +98,7 @@ function MainApp() {
         <UploadSection
           csvFile={csvFile}
           onCsvUpload={handleCsvUploadSuccess}
+          onVideoUpload={handleVideoUpload}
         />
       </div>
 

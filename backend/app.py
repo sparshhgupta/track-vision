@@ -6,6 +6,7 @@ import os
 import logging
 import subprocess
 from assesment import get_edge_frames, StoredResultsAssessment, load_tracking_results_from_csv
+import time
 
 start_frames=[]
 end_frames=[]
@@ -60,9 +61,79 @@ def get_track_end_frames_with_ids(csv_path):
 
 # Global variable to store video path temporarily
 video_storage = {}
+# def draw_bounding_boxes(video_path, csv_path):
+#     """
+#     Processes the video by drawing bounding boxes based on the CSV file.
+#     """
+#     try:
+#         # Read CSV file
+#         data = pd.read_csv(csv_path)
+#         logging.info(f"CSV data preview: {data.head()}")
+
+#         # Open the video
+#         cap = cv2.VideoCapture(video_path)
+#         if not cap.isOpened():
+#             raise ValueError(f"Unable to open video file: {video_path}")
+#         logging.info("Video file opened successfully.")
+
+#         frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+#         frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+#         fps = int(cap.get(cv2.CAP_PROP_FPS))
+#         fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Change from 'mp4v' to 'XVID'
+
+        
+#         #output_path = os.path.join('temp', os.path.basename(video_path).replace('.mp4', '_processed.mp4'))
+#         output_path = os.path.join('temp', os.path.basename(video_path).replace('.mp4', '_processed.avi'))
+
+#         logging.info(f"Output video path: {output_path}")
+
+
+
+#         logging.info(f"Video Properties - Width: {frame_width}, Height: {frame_height}, FPS: {fps}")
+
+
+#         out = cv2.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
+#         if not out.isOpened():
+#             raise ValueError(f"Unable to initialize video writer at {output_path}")
+
+#         frame_idx = 0
+#         while cap.isOpened():
+#             ret, frame = cap.read()
+#             if not ret:
+#                 break
+
+#             # Filter bounding boxes for the current frame
+#             frame_boxes = data[data['frame'] == frame_idx]
+#             logging.info(f"Processing frame {frame_idx}, boxes: {len(frame_boxes)}")
+
+#             for _, row in frame_boxes.iterrows():
+#                 # Extract bounding box coordinates and metadata
+#                 x1, y1, x2, y2 = int(row['x1']), int(row['y1']), int(row['x2']), int(row['y2'])
+#                 track_id, class_id, confidence = row['track_id'], row['class_id'], row['confidence']
+
+#                 # Draw bounding box
+#                 color = (0, 255, 0)
+#                 cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+
+#                 # Add label
+#                 label = f'ID: {track_id}, Class: {class_id}, Conf: {confidence:.2f}'
+#                 cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+
+#             out.write(frame)
+#             frame_idx += 1
+
+#         cap.release()
+#         out.release()
+#         logging.info("Video processing complete.")
+#         return output_path
+
+#     except Exception as e:
+#         logging.error(f"Error processing video: {e}")
+#         raise
+
 def draw_bounding_boxes(video_path, csv_path):
     """
-    Processes the video by drawing bounding boxes based on the CSV file.
+    Processes the video by drawing bounding boxes based on the CSV file and writes directly to MP4.
     """
     try:
         # Read CSV file
@@ -78,22 +149,24 @@ def draw_bounding_boxes(video_path, csv_path):
         frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         fps = int(cap.get(cv2.CAP_PROP_FPS))
-        fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Change from 'mp4v' to 'XVID'
+        fourcc = cv2.VideoWriter_fourcc(*'avc1')  # H264-compatible for MP4
 
-        
-        #output_path = os.path.join('temp', os.path.basename(video_path).replace('.mp4', '_processed.mp4'))
-        output_path = os.path.join('temp', os.path.basename(video_path).replace('.mp4', '_processed.avi'))
-
+        output_path = os.path.join('temp', os.path.basename(video_path).replace('.mp4', '_processed.mp4'))
         logging.info(f"Output video path: {output_path}")
-
-
-
         logging.info(f"Video Properties - Width: {frame_width}, Height: {frame_height}, FPS: {fps}")
 
+        # Scaling factors from original resolution (5472x3078) to current video resolution
+        # x_scale = frame_width / 5472
+        # y_scale = frame_height / 3078
+
+        # for testing for 5.4K videos
+        
+        x_scale = frame_width 
+        y_scale = frame_height
 
         out = cv2.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
         if not out.isOpened():
-            raise ValueError(f"Unable to initialize video writer at {output_path}")
+            raise ValueError(f"Unable to initialize MP4 video writer at {output_path}")
 
         frame_idx = 0
         while cap.isOpened():
@@ -106,8 +179,11 @@ def draw_bounding_boxes(video_path, csv_path):
             logging.info(f"Processing frame {frame_idx}, boxes: {len(frame_boxes)}")
 
             for _, row in frame_boxes.iterrows():
-                # Extract bounding box coordinates and metadata
-                x1, y1, x2, y2 = int(row['x1']), int(row['y1']), int(row['x2']), int(row['y2'])
+                # Extract and scale bounding box coordinates
+                x1 = int(row['x1'] * x_scale)
+                y1 = int(row['y1'] * y_scale)
+                x2 = int(row['x2'] * x_scale)
+                y2 = int(row['y2'] * y_scale)
                 track_id, class_id, confidence = row['track_id'], row['class_id'], row['confidence']
 
                 # Draw bounding box
@@ -129,6 +205,7 @@ def draw_bounding_boxes(video_path, csv_path):
     except Exception as e:
         logging.error(f"Error processing video: {e}")
         raise
+
 
 @app.route('/save-logs', methods=['POST'])
 def save_logs():
@@ -196,12 +273,13 @@ def upload_files():
     """
     API endpoint to receive only CSV, process the video, and return the processed MP4 video file.
     """
-    avi_output_path = None
     mp4_output_path = None
+    start_time = time.time()  # Start timing
 
     try:
         # Receive CSV file
         csv_file = request.files.get('csv')
+        
 
         if not csv_file:
             return jsonify({'error': 'CSV file is required'}), 400
@@ -218,15 +296,17 @@ def upload_files():
             return jsonify({'error': 'Video file is missing, please upload it first through /upload-video'}), 400
 
         # Process the video with CSV
-        avi_output_path = draw_bounding_boxes(video_path, csv_path)
+        mp4_output_path = draw_bounding_boxes(video_path, csv_path)
 
-        # Convert the AVI output to MP4
-        mp4_output_path = avi_output_path.replace('.avi', '.mp4')
-        convert_to_mp4(avi_output_path, mp4_output_path)
 
         # Ensure MP4 output video path is valid
         if not os.path.exists(mp4_output_path):
             raise ValueError(f"Processed MP4 video not found: {mp4_output_path}")
+        
+        end_time = time.time()  # End timing
+        total_time = end_time - start_time
+        logging.info(f"Time taken to render video from CSV upload: {total_time:.2f} seconds")
+
 
         # Send the processed MP4 video as a response
         return send_file(mp4_output_path, as_attachment=True)
@@ -269,9 +349,8 @@ def process_video_with_updated_csv(csv_path):
     if not video_path or not os.path.exists(video_path):
         return None, "Video file is missing or not found"
 
-    avi_output_path = draw_bounding_boxes(video_path, csv_path)
-    mp4_output_path = avi_output_path.replace('.avi', '.mp4')
-    convert_to_mp4(avi_output_path, mp4_output_path)
+    mp4_output_path = draw_bounding_boxes(video_path, csv_path)
+
 
     if not os.path.exists(mp4_output_path):
         return None, f"Processed MP4 video not found: {mp4_output_path}"
@@ -307,21 +386,53 @@ def update_id():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-def convert_to_mp4(avi_path, mp4_path):
-    """
-    Converts an AVI video file to MP4 format using ffmpeg.
-    """
-    try:
-        command = [
-            'ffmpeg', '-i', avi_path, '-c:v', 'libx264', '-preset', 'fast',
-            '-crf', '23', '-c:a', 'aac', '-strict', 'experimental', mp4_path
-        ]
-        subprocess.run(command, check=True)
-        logging.info(f"Converted AVI to MP4: {mp4_path}")
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Error during AVI to MP4 conversion: {e}")
-        raise ValueError("Failed to convert AVI to MP4")
+# def convert_to_mp4(avi_path, mp4_path):
+#     """
+#     Converts an AVI video file to MP4 format using ffmpeg.
+#     """
+#     try:
+#         command = [
+#             'ffmpeg', '-i', avi_path, '-c:v', 'libx264', '-preset', 'fast',
+#             '-crf', '23', '-c:a', 'aac', '-strict', 'experimental', mp4_path
+#         ]
+#         subprocess.run(command, check=True)
+#         logging.info(f"Converted AVI to MP4: {mp4_path}")
+#     except subprocess.CalledProcessError as e:
+#         logging.error(f"Error during AVI to MP4 conversion: {e}")
+#         raise ValueError("Failed to convert AVI to MP4")
 
+
+# def convert_to_mp4(avi_path, mp4_path):
+#     """
+#     Converts an AVI video file to MP4 format using ffmpeg with optimized settings.
+#     """
+#     if not os.path.exists(avi_path):
+#         raise FileNotFoundError(f"AVI file not found: {avi_path}")
+    
+#     try:
+#         command = [
+#             'ffmpeg',
+#             '-y',  # Overwrite output if it exists
+#             '-i', avi_path,
+#             '-c:v', 'libx264',
+#             '-preset', 'ultrafast',  # Faster encoding, larger file
+#             '-crf', '23',
+#             '-threads', '4',  # Adjust based on system
+#             '-c:a', 'aac',
+#             '-movflags', '+faststart',  # Better streaming performance
+#             mp4_path
+#         ]
+#         result = subprocess.run(
+#             command,
+#             stdout=subprocess.PIPE,
+#             stderr=subprocess.PIPE,
+#             text=True,
+#             check=True
+#         )
+#         logging.info(f"Converted AVI to MP4: {mp4_path}")
+#     except subprocess.CalledProcessError as e:
+#         logging.error(f"FFmpeg error:\n{e.stderr}")
+#         raise RuntimeError("Failed to convert AVI to MP4") from e
 
 if __name__ == '__main__':
     app.run(debug=True)
